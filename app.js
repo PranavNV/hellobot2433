@@ -6,8 +6,8 @@ var request = require('request');
 var http = require('http');
 
 var connector = new builder.ChatConnector({
-    appId: '',
-    appPassword: ''
+    appId: '18ba6a1c-271a-4a9d-927a-8cc9d92115f0',
+    appPassword: 'VGtZcx2bBA9eCk8f5b8iYR9'
 });
 var bot = new builder.UniversalBot(connector);
 var server = restify.createServer();
