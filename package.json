@@ -1,0 +1,24 @@
+{
+  "name": "hellobot2433",
+  "version": "1.0.0",
+  "description": "hello bot",
+  "main": "app.js",
+  "dependencies": {
+    "botbuilder": "^3.8.3",
+    "restify": "^4.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PranavNV/hellobot2433.git"
+  },
+  "author": "Anybody",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PranavNV/hellobot2433/issues"
+  },
+  "homepage": "https://github.com/PranavNV/hellobot2433#readme"
+}
