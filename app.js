@@ -10,8 +10,8 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 });
 
 var connector = new builder.ChatConnector({
-    appId:'',
-    appPassword:''
+    appId:'ee47f03a-650c-44c3-9d1b-b7dfa19fc658',
+    appPassword:'WC2QnB1emO9gv1n7oZmwVc3'
 });
 var bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
