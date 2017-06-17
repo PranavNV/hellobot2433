@@ -1,167 +1,190 @@
-var restify = require('restify');
-var builder = require('botbuilder');
-var fs = require('fs');
-var util = require('util');
-var request = require('request');
-var http = require('http');
 
-var connector = new builder.ChatConnector({
-    appId: '5029e334-c786-429f-857f-0e2949c62de4',
-    appPassword: 'tVNF94u1tYvSHDMxiBH4EEg'
-});
-var bot = new builder.UniversalBot(connector);
+var builder = require('botbuilder');
+var restify = require('restify');
+var locationDialog = require('botbuilder-location');
+
+// Setup Restify Server
 var server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, 'localhost', function() {
+server.listen(process.env.port || process.env.PORT || 3978, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
-server.use(restify.acceptParser(server.acceptable));
-server.use(restify.jsonp());
-server.use(restify.bodyParser({
-    mapParams: false
-}));
+
+var connector = new builder.ChatConnector({
+    appId:'',
+    appPassword:''
+});
+var bot = new builder.UniversalBot(connector);
 server.post('/api/messages', connector.listen());
 
-bot.dialog('/', [function(session) {
-    session.send('' + 'Hello, Welcome to the Aerospace PDM. I am your virtual assistant.');
-    builder.Prompts.choice(session, 'Please select any of the options 1, 2 or 3', "Get Training on NGPDM|Have a question regarding NGPDM (FAQs)|Raise a Support Request");
+bot.library(locationDialog.createLibrary('As2XdBj3H8TVBvXl6tmBu5nF2rTz5cnUtCb4UK4dr3_zWOEUREyQhZz6RpI3UQfB'));
+
+bot.dialog('/', function (session) {
+    session.send('Hi! This is Fitbot. Your personal fitness assistant :)');
+	session.beginDialog('/profile');
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bot.dialog('/profile', [
+    function (session) {
+        builder.Prompts.text(session, 'Heyo! What is your name?');
+    },
+    function (session, results) {
+        session.userData.name = results.response;
+        session.replaceDialog('/step1');
+    }
+]);
+
+
+
+bot.dialog('/step1', [function(session) {
+    session.send('Hello %s I am your virtual assistant for today!',session.userData.name);
+    builder.Prompts.choice(session, 'What are you looking for?', "What is Sweatwell all about?|Have a question regarding the training sessions-FAQs|Want to contact an expert?|Wanna to order our special goodies and material?");
 }, function(session, results) {
 	
     switch (results.response.entity) {
 	  
-        case "Get Training on NGPDM":
-            session.replaceDialog("/1Dialog");
+        case "What is Sweatwell all about?":
+            session.replaceDialog("/About");
             break;
-        case "Have a question regarding NGPDM (FAQs)":
+        case "Have a question regarding the training sessions-FAQs":
 			
-			builder.Prompts.text(session, 'Please specifc your question token');
+			session.replaceDialog("/FAQs");
 			break;
-        case "Raise a Support Request":
-            session.replaceDialog("/3Dialog");
+        case "Want to contact an expert?":
+            session.replaceDialog("/Contacts");
+            break;
+        case "Wanna to order our special goodies and material?":
+            session.replaceDialog("/map");
             break;
         default:
-            session.replaceDialog("/");
+            session.replaceDialog("/stepbye");
             break;
     }
 }, function(session, results){
 	session.userData.name = results.response;	
-	session.replaceDialog("/ngpdmOpenQuery");	
+	session.replaceDialog("/stepbleh");	
 }]);
 
-bot.dialog('/ngpdmOpenQuery', [function(session) {
-	if( session.userData.name != null ) 
-	{
-		//TODO 
-		/*
-			Our logic to continue or stop the open query url calls
-		*/
-	var ngpdmUrlPrefix = "http://10.10.6.77:5000/_analyse?question=";
-	var ngpdmUrl = ngpdmUrlPrefix+ session.userData.name;
-	console.log("GET " + ngpdmUrl);
-    var request = require('request');
-  
-    request.post({
-        url: ngpdmUrl,
-        headers: {
-            "Content-Type": "application/JSON"
-        }
-    }, function(err, httpResponse, body) {
-        if (err) {
-            session.send('Failed to add your request:', err);
-            return console.error('Failed to add your request:', err);
-        }
-		else{
-        var resultJSON = JSON.parse(body);
-		builder.Prompts.choice(session, 'Please select any of the option.', resultJSON.result);	
-		}
-    });
 
-	}
-    	
-},function(session, results) {
+
+bot.dialog('/About', function (session) {
+    session.send('Our main purpose is to find the right fitness plan for you and also the right trainer to guide you in your path to getting your body into perfect shape!');
+	session.send('Check out all the amazing events that are occuring around you and also keep a live tracker on your workout schedule');
+	session.beginDialog('/step1');
+});
+
+bot.dialog('/Contacts', function (session) {
+    session.send('One moment %s,I will just fetch you the contact you are looking for...',session.userData.name);
+	session.send('Name: Harsh Ragav');
+    session.send('Designation: Tech Support');
+    session.send('Phone number: 9786274937');
+    session.send('Email ID: harshragav@sweatwell.com');
+	session.beginDialog('/step1');
+});
+
+
+
+
+bot.dialog('/FAQs', [function(session) {
+    session.send('Hello %s I am your virtual assistant for today!',session.userData.name);
+    builder.Prompts.choice(session, 'Here are the most common queries we encountered', "What types of fitness plans are available?|Can I be both a trainer and a fitness seeker?|How are trainers selected for a fitness seeker?|Who rates the trainiers?");
+}, function(session, results) {
 	
-	session.userData.name = results.response;
-	session.replaceDialog("/ngpdmOpenQuery");
-
-}]);
-
-
-bot.dialog('/1Dialog', [function(session) {
-    builder.Prompts.choice(session, 'Please select any of the options 1, 2 or 3', "List NGPDM Trainings|Suggest new Trainings|Find NGPDM Expert");
-}, function(session, results) {
     switch (results.response.entity) {
-        case "List NGPDM Trainings":
-            session.replaceDialog("/1_1Dialog");
+	  
+        case "What types of fitness plans are available?":
+            session.send('There are mainly three types of fitness plans:');
+			session.send('1.Weight Loss Plan');
+			session.send('2.Muscle Gain Plan');
+			session.send('3.Stay Fit Plan');
+			session.replaceDialog("/stepbye");
             break;
-        case "Suggest new Trainings":
-            session.replaceDialog("/1_2Dialog");
+        case "Can I be both a trainer and a fitness seeker?":
+			session.send('No.');
+			session.replaceDialog("/stepbye");
+			break;
+        case "How are trainers selected for a fitness seeker?":
+            session.send('We select the best trainier in your vicinity by the preference that  you have mentioned and also mainly by your BMI value');
+			session.replaceDialog("/stepbye");
             break;
-        case "Find NGPDM Expert":
-            session.replaceDialog("/1_3Dialog");
+		case "Who rates the trainiers?":
+		    session.send('The fitness seekers rate the trainers as per their experiences');
+            session.replaceDialog("/stepbye");
             break;
         default:
-            session.replaceDialog("/");
+            session.replaceDialog("/step1");
             break;
     }
+}, function(session, results){
+	session.userData.name = results.response;	
+	session.replaceDialog("/stepbleh");	
 }]);
-bot.dialog('/1_1Dialog', [function(session) {
-    session.send('' + 'Please select a Training from below list [1, 2 or 3]');
-}]);
-bot.dialog('/1_2Dialog', [function(session) {
-    session.send('' + 'Please provide the new Training name and details');
-    session.send('' + 'Thank You for your inputs. We have notified the PDM team about your training suggestion. They will notify you on the action.');
-}]);
-bot.dialog('/1_3Dialog', [function(session) {
-    session.send('' + 'Provide List of Module Names and Experts Names');
-}]);
-  
-bot.dialog('/2_1Dialog', [function(session) {
-    session.send('' + 'Please specifc your question');
-    builder.Prompts.choice(session, 'Please select the area in which your problem is related to', "Option 1|Option 2");
-}, function(session, results) {
-    switch (results.response.entity) {
-        case "Option 1":
-            session.replaceDialog("/2_1_1Dialog");
-            break;
-        case "Option 2":
-            session.replaceDialog("/2_1_2Dialog");
-            break;
-        default:
-            session.replaceDialog("/");
-            break;
+
+
+
+
+
+bot.dialog('/stepbleh', function (session) {
+    session.send('I did not understand what you were trying to say. Lets start this over now...');
+	session.endConversation();
+});
+
+
+bot.dialog('/stepbye', function (session) {
+    session.send('Hope I was of help! Thank you and see you soon!!! :)');
+	session.endConversation();
+});
+
+
+
+
+bot.library(locationDialog.createLibrary('As2XdBj3H8TVBvXl6tmBu5nF2rTz5cnUtCb4UK4dr3_zWOEUREyQhZz6RpI3UQfB'));
+
+bot.dialog("/map", [
+    function (session) {
+        var options = {
+            prompt: "Where should I ship your order?",
+            useNativeControl: true,
+            reverseGeocode: true,
+			skipFavorites: false,
+			skipConfirmationAsk: true,
+            requiredFields:
+                locationDialog.LocationRequiredFields.streetAddress |
+                locationDialog.LocationRequiredFields.locality |
+                locationDialog.LocationRequiredFields.region |
+                locationDialog.LocationRequiredFields.postalCode |
+                locationDialog.LocationRequiredFields.country
+        };
+
+        locationDialog.getLocation(session, options);
+    },
+    function (session, results) {
+        if (results.response) {
+            var place = results.response;
+			var formattedAddress = 
+            session.send("Thanks, I will ship to " + getFormattedAddressFromPlace(place, ", "));
+        }
     }
-}]);
-bot.dialog('/2_1_1Dialog', [function(session) {
-    session.send('' + 'If you are satisfied with the response, please reply by entering 7; else reply by entering 0 or press 1/2/3 to view rest of the answers');
-}]);
-bot.dialog('/2_1_2Dialog', [function(session) {
-    session.send('' + 'We have notified your question to the Expert. We will add the answer to your query shortly to our FAQ.');
-}]);
-bot.dialog('/3_3Dialog', [function(session) {
-    builder.Prompts.choice(session, 'Please select any of the options 1, 2 or 3', "Report an Issue|Suggest new feature or Idea |Talk to Support Staff");
-}, function(session, results) {
-    switch (results.response.entity) {
-        case "Report an Issue":
-            session.replaceDialog("/3_1Dialog");
-            break;
-        case "Suggest new feature or Idea ":
-            session.replaceDialog("/3_2Dialog");
-            break;
-        case "Talk to Support Staff":
-            session.replaceDialog("/3_3Dialog");
-            break;
-        default:
-            session.replaceDialog("/");
-            break;
-    }
-}, function(session, results) {
-    session.send('' + 'Provide List of Function Names and Contact Names');
-}]);
-bot.dialog('/3_1Dialog', [function(session) {
-    session.send('' + 'Please specify the Issue');
-    session.send('' + 'Your Issue is reported to the Support Team. The JIRA Ticket number is #####. You will be informed about the status shortly.\n\nContact [support distribution email list] for any urgent support.');
-}]);
-bot.dialog('/3_2Dialog', [function(session) {
-    session.send('' + 'Please specifc new feature or Idea');
-    session.send('' + 'Thank you for suggestion. The team is notified and you will be informed about the status shortly.');
-    session.send('' + 'We have notified the Team about your suggestion. \n\nContact [support distribution email list] for any urgent support.');
-}]);
+]);
+
+function getFormattedAddressFromPlace(place, separator) {
+    var addressParts = [place.streetAddress, place.locality, place.region, place.postalCode, place.country];
+    return addressParts.filter(i => i).join(separator);
+};
